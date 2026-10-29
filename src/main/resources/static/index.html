@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="知行 LearnHub AI：把学习资料变成有来源、可追溯的知识问答。">
+  <title>知行 · LearnHub AI</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23be5635'/%3E%3Ctext x='7' y='24' fill='white' font-size='24'%3EL%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">跳到主要内容</a>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="知行首页"><span class="brand-mark">知</span><span>知行 <small>LearnHub AI</small></span></a>
+    <div class="sidebar-caption">你的个人学习空间 <span class="live-dot"></span></div>
+    <nav class="view-nav" aria-label="工作区">
+      <button type="button" data-view="library" aria-current="page"><span aria-hidden="true">▤</span> 资料库 <span class="nav-index">01</span></button>
+      <button type="button" data-view="chat"><span aria-hidden="true">↗</span> 学习问答 <span class="nav-index">02</span></button>
+      <button type="button" data-view="notes"><span aria-hidden="true">▧</span> 学习笔记 <span class="nav-index">03</span></button>
+    </nav>
+    <div class="sidebar-heading"><h2>知识库</h2><button type="button" id="addKb" class="icon-button" aria-label="新建知识库">＋</button></div>
+    <div id="kbList" class="kb-list"><p class="muted small">连接后显示知识库</p></div>
+    <div class="sidebar-bottom"><span class="mini-label">LOCAL FIRST / SOURCE MATTERS</span><p>先找到依据，再形成答案。</p><button type="button" id="disconnect" class="text-button">锁定工作区</button></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span class="breadcrumb">学习空间 <span>/</span> <strong id="currentKb">尚未选择知识库</strong></span><div class="top-actions"><span id="modeBadge" class="badge">等待连接</span><button type="button" id="themeToggle" class="icon-button" aria-label="切换深色模式">◐</button><button type="button" id="lockTop" class="icon-button" aria-label="锁定工作区" title="锁定工作区">⇥</button></div></header>
+    <main id="main" tabindex="-1">
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+      <div id="progress" class="progress" role="status" hidden>正在处理，请稍候…</div>
+      <section id="libraryView" class="view">
+        <div class="page-heading"><div><span class="eyebrow">YOUR KNOWLEDGE, CONNECTED</span><h1>让知识不止于收藏<span class="orange">。</span></h1><p class="muted">导入课程讲义与学习资料，让每一次提问都有据可查。</p></div><button type="button" id="createKbHero" class="button primary">＋ 新建知识库</button></div>
+        <div class="welcome-panel"><div><span class="badge warm">从资料到理解</span><h2>构建属于你的<br>学习知识网络。</h2><p>知识库隔离检索范围，引用连接原文。<br>不配置模型，也能先用本地检索开始学习。</p><button type="button" id="sampleImport" class="button">导入 RAG 入门示例 <span aria-hidden="true">↗</span></button></div><div class="knowledge-diagram" aria-label="资料经过分块索引、检索，再形成带来源的学习问答"><div class="diagram-node">课程资料 <small>TXT · Markdown · PDF</small></div><span class="diagram-line">↓</span><div class="diagram-node accent">分块 · 索引 · 检索 <small>仅在当前知识库中查找</small></div><span class="diagram-line">↓</span><div class="diagram-node">带来源的学习问答 <small>证据优先，不编造答案</small></div></div></div>
+        <div class="stats-grid"><div class="stat"><span>已建立知识库</span><strong id="kbCount">0</strong></div><div class="stat"><span>当前资料数</span><strong id="docCount">0</strong></div><div class="stat"><span>当前知识片段</span><strong id="chunkCount">0</strong></div></div>
+        <section class="panel"><div class="section-heading"><div><h2>学习资料</h2><p class="muted small">UTF-8 的 TXT / Markdown 或有文字的 PDF，单文件最多 10 MB、PDF 最多 50 页。</p></div><button type="button" id="deleteKb" class="text-button danger">删除当前库</button></div>
+          <form id="uploadForm" class="upload-zone"><label for="documentFile"><span class="upload-icon" aria-hidden="true">↑</span><strong>为知识库添加一份资料</strong><span class="muted small">文件仅在本机解析；若配置模型服务，问题和检索片段将发送至你配置的服务。</span></label><div class="upload-controls"><input id="documentFile" type="file" accept=".txt,.md,.pdf" required><button class="button primary" type="submit">上传并建立索引</button></div></form>
+          <div id="documentList" class="document-list"><p class="empty">新建一个知识库，从第一份学习资料开始。</p></div>
+        </section>
+      </section>
+      <section id="chatView" class="view" hidden>
+        <div class="page-heading"><div><span class="eyebrow">ASK WITH EVIDENCE</span><h1>不只得到回答，更找到依据。</h1><p id="chatModeHelp" class="muted">仅在当前知识库中检索，不跨库读取。</p></div><button type="button" id="newSession" class="button">＋ 新对话</button></div>
+        <div class="chat-layout"><aside class="panel session-panel"><h2>学习会话</h2><div id="sessionList" class="session-list"></div></aside><section class="panel conversation-panel"><div class="conversation-header"><h2 id="sessionTitle">开始一次探索</h2><button type="button" id="deleteSession" class="text-button danger" hidden>删除会话</button></div><div id="messages" class="messages" aria-live="polite"><div class="chat-welcome"><span class="big-mark" aria-hidden="true">“</span><h3>从一个好问题开始。</h3><p class="muted">例如：RAG 和模型微调有什么区别？<br>回答下面的引用卡片，可以直接展开原文。</p></div></div><form id="questionForm" class="composer"><label for="question" class="sr-only">输入学习问题</label><textarea id="question" rows="3" maxlength="4000" placeholder="围绕当前知识库，提出你的问题…" required></textarea><div class="composer-footer"><label class="check-label"><input id="searchOnly" type="checkbox"> 仅检索原文</label><button type="submit" class="button primary">发送问题 <span aria-hidden="true">↑</span></button></div><p class="muted small">未配置生成模型时只返回检索结果，不模拟 AI 回答。Enter 发送，Shift + Enter 换行。</p></form></section></div>
+      </section>
+      <section id="notesView" class="view" hidden>
+        <div class="page-heading"><div><span class="eyebrow">MAKE IT YOUR OWN</span><h1>把理解，留在这里。</h1><p class="muted">将有用的回答整理成笔记，形成自己的知识体系。</p></div><button type="button" id="newNote" class="button">＋ 新建笔记</button></div>
+        <div class="notes-layout"><section class="panel"><h2>我的笔记</h2><div id="noteList" class="note-list"></div></section><form id="noteForm" class="panel note-editor"><label for="noteTitle">笔记标题</label><input id="noteTitle" maxlength="100" required placeholder="给这次收获起个名字"><label for="noteBody">笔记正文</label><textarea id="noteBody" rows="16" maxlength="20000" required placeholder="写下概念、思考与下一步想验证的问题…"></textarea><div class="editor-actions"><span id="noteState" class="muted small">尚未保存</span><button type="button" id="deleteNote" class="text-button danger" hidden>删除</button><button type="submit" class="button primary">保存笔记</button></div></form></div>
+      </section>
+      <footer class="workspace-footer"><span>知行 LearnHub AI · 学习实践项目</span><a href="https://github.com/Flower-jie/learnhub-ai" target="_blank" rel="noopener noreferrer">查看源码 ↗</a></footer>
+    </main>
+  </div>
+  <dialog id="authDialog" class="auth-dialog" aria-labelledby="authTitle"><form id="authForm"><span class="brand-mark">知</span><span class="eyebrow">WELCOME TO LEARNHUB</span><h2 id="authTitle">连接你的学习空间</h2><p class="muted">输入服务启动时设置的 APP_ACCESS_TOKEN。访问令牌只保存在当前页面内存，刷新后需要重新连接。</p><label for="accessToken">本地访问令牌</label><input id="accessToken" type="password" autocomplete="off" spellcheck="false" required minlength="24" placeholder="输入至少 24 字符的访问令牌"><p id="authError" class="danger small" role="alert"></p><button type="submit" class="button primary full-width">进入工作区 <span aria-hidden="true">→</span></button><details class="setup-help"><summary>第一次使用？了解启动与模型配置</summary><p>需要 Java 21 和 Maven。在项目目录设置 APP_ACCESS_TOKEN 后运行 <code>mvn spring-boot:run</code>，默认地址为 <code>127.0.0.1:8088</code>，请从该地址打开页面。</p><p>默认本地词项哈希检索，不是语义向量。可选设置 <code>CHAT_API_BASE_URL</code>、<code>CHAT_API_KEY</code>、<code>CHAT_MODEL</code> 启用生成；设置对应的 <code>EMBEDDING_*</code> 三项启用语义向量。BASE_URL 通常以 <code>/v1</code> 结尾。</p><p>更换向量模式或模型后，请新建库或重新导入资料。模型密钥仅设置在后端环境变量中，不要在此输入。扫描 PDF 暂不支持 OCR；这是本地学习工具，不应直接暴露公网。</p></details></form></dialog>
+  <dialog id="kbDialog" class="small-dialog" aria-labelledby="kbDialogTitle"><form id="kbForm"><h2 id="kbDialogTitle">新建知识库</h2><p class="muted">按课程或主题分类，每个知识库独立检索。</p><label for="kbName">知识库名称</label><input id="kbName" maxlength="100" required placeholder="例如：Java 后端进阶"><p id="kbError" class="danger small" role="alert"></p><div class="dialog-actions"><button type="button" id="closeKbDialog" class="button">取消</button><button type="submit" class="button primary">创建知识库</button></div></form></dialog>
+</body>
+</html>
